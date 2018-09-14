@@ -20,3 +20,24 @@ R Scripts supporting the manuscript 'Parsing out the drivers of riverine fish in
 3.Script_Drivers_Invasion.R
 -Prepare datasets for models
 -Run MCMCglmm models
+
+--> associated with files:
+#Occurrence database at the HUC8 scale (clean with names harmonized as described in Material & Methods)
+"database_Fish.txt"
+
+#Trait database (clean with imputed values as described in Material & Methods)
+"database_traits_imputed.txt"
+
+#File with characteristics of selected gages  [see SI Appendix, Table S2 for details on the variables]
+"Characteristics_selected_gages.txt"
+
+#File with characteristics of sub-watersheds (=HUC8) [NHDPlus, available at http://nhd.usgs.gov/wbd.html]
+"WBD_HUC8.txt"
+
+#Shapefile of local catchments (=HUC12) [NHDPlus, available at http://nhd.usgs.gov/wbd.html]
+"WDB_HUC12.shp"   
+
+
+
+
+
