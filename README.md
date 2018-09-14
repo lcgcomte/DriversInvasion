@@ -38,6 +38,9 @@ R Scripts supporting the manuscript 'Parsing out the drivers of riverine fish in
 #Shapefile of local catchments (=HUC12) [NHDPlus, available at http://nhd.usgs.gov/wbd.html]:
 "WDB_HUC12.shp"   
 
+#File recreational freshwater fishing demand per HUC12 [available at https://www.epa.gov/enviroatlas/enviroatlas-data]:
+FreshwaterFishing_RecreationDemand.csv"
+
 
 
 
