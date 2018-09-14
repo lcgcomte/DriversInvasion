@@ -217,11 +217,11 @@ SNR = c(SNR,20*log(RMS.sign/RMS.noise,10))
 #////////////////////////////////
 #Seasonality: annual variation power in daily discharge (AVP) 
 #////////////////////////////////
-#select significant amplitudes over scales of 365 days for the entire time-series
+#select amplitudes over scales of 365 days for the entire time-series
 Amp.12 = my.wt$Power[c(max(which(my.wt$Period < 365.25)),max(which(my.wt$Period < 365.25))+1),]
 
 #integrate the scale-averaged wavelet power curve
-y = apply(Amp.12,2,function(x)((12.77*1/20)/0.776)*weighted.mean(x,w = (1/freq.12),na.rm=T))
+y = apply(Amp.12,2,function(x)((12.77*1/20)/0.776)*weighted.mean(x,w = (1/freq.12),na.rm=T)) #[see equ 24 Torrence & Compo 1997 p. 73 where 0.776 is the reconstruction factor for the Morlet wavelet] 
 x = rawDailyData$date
 AVP = c(AVP, sum(diff(as.numeric(x)) * (head(y,-1)+tail(y,-1)))/2)
 
