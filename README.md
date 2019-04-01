@@ -4,7 +4,6 @@ R Scripts supporting the manuscript 'Parsing out the drivers of riverine fish in
 1.Script_Patterns_Invasion.R:
 -Estimate life-history affinities
 -Calculate ln-ratios density & life-history proportions
--Compute functional overlap
 -Assess regional trends
 -Null model random colonizations
 
