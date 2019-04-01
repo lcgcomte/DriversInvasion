@@ -11,15 +11,7 @@ gages$Gage_ID = zeroPad(gages$Gage_ID,8)  #pad gage ID with zeros
 #1-Niche oppurtunities arising from human-induced flow alteration (already HUC8 scale)
 #////////////////
 alt_huc8 = read.table("Alterations_huc8.txt",h=T)
-
-#////////////////
-#2-Biotic resistance (already HUC8 scale)
-#////////////////
-#Densities natives
-dens_NA = read.table("Densities_Natives.txt",h=T)
-
-#Functional overlap
-overlap = read.table("Overlap_NAS_NA.txt",h=T)
+rownames(alt_huc8) = zeroPad(rownames(alt_huc8),8)  #pad gage ID with zeros
 
 #////////////////
 #3-Propagule pressure
@@ -62,7 +54,7 @@ dens_LD_huc8 = sapply(split(dens_LD, dens_LD$HUC8), function(z) weighted.mean(z$
 #//////////////////////////////////////
 #Creating predictor file for models
 #/////////////////////////////////////
-dat.mod = data.frame(alt_huc8,Dens = dens_NA[match(rownames(alt_huc8),rownames(dens_NA)),1],Overlap = overlap[match(rownames(alt_huc8),rownames(overlap)),1],Fishing = Fishing_huc8[match(rownames(alt_huc8),names(Fishing_huc8))],Dams = dens_LD_huc8[match(rownames(alt_huc8),names(dens_LD_huc8))])
+dat.mod = data.frame(alt_huc8,Fishing = Fishing_huc8[match(rownames(alt_huc8),names(Fishing_huc8))],Dams = dens_LD_huc8[match(rownames(alt_huc8),names(dens_LD_huc8))])
 
 #Save file
 write.table(dat.mod,"Predictors_NAS_HUC8.txt",sep="\t")
@@ -76,6 +68,8 @@ require(MCMCglmm); require(coda)
 
 #predictor variables
 dat.mod = read.table("Predictors_NAS_HUC8.txt",h=T)
+dat.mod$NB_LD_dens_huc8 = log(dat.mod$Dams + 0.0001)
+dat.mod$Fishing = log(dat.mod$Fishing)
 
 #responses variables
 lnratio_prop=read.table("LnRatio_proportion_life-history_NAS_NA.txt",h=T)
@@ -97,22 +91,21 @@ DAT = apply(DAT,2,zscores)  #transform to z-scores (both predictors and response
 DAT = data.frame(DAT)
 DAT.dens = na.omit(DAT)
 
-mm.ratio_tot1 = MCMCglmm(Y ~ Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                    + Dens + Overlap + Fishing + Dams,    
+equa = "Y ~ Alter_SNR * Fishing + Alter_AVP * Fishing + Alter_CV * Fishing + Alter_Median * Fishing + Alter_SNR * Dams + Alter_AVP * Dams + Alter_CV * Dams + Alter_Median * Dams"
+
+mm.ratio_tot1 = MCMCglmm(as.formula(equa),    
                     data=DAT.dens,nitt= 350000,thin=200,burnin= 60000, 
                     rcov = ~ units,     
                     verbose=FALSE,family=c("gaussian"))
                      
-mm.ratio_tot2 = MCMCglmm(Y ~ Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                    + Dens + Overlap + Fishing + Dams,    
+mm.ratio_tot2 = MCMCglmm(as.formula(equa),    
                     data=DAT.dens,nitt= 350000,thin=200,burnin= 60000, 
                     rcov = ~ units,     
                     verbose=FALSE,family=c("gaussian"))
 
-mm.ratio_tot3 = MCMCglmm(Y ~ Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                    + Dens + Overlap + Fishing + Dams,    
+mm.ratio_tot3 = MCMCglmm(as.formula(equa),    
                     data=DAT.dens,nitt= 350000,thin=200,burnin= 60000, 
-                    rcov = ~ units,     
+                    rcov = ~ units,   
                     verbose=FALSE,family=c("gaussian"))
 
 #//////////////////////
@@ -155,23 +148,20 @@ DAT = apply(DAT,2,zscores)  #transform to z-scores (both predictors and response
 DAT = data.frame(DAT)
 DAT.prop = na.omit(DAT)
 
-mm.ratio.prop1 = MCMCglmm(cbind(equilibrium,opportunistic,periodic) ~ (trait - 1)+
-                 trait:(Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                 + Dens + Overlap + Fishing + Dams),  
+equa = "cbind(equilibrium,opportunistic,periodic) ~ (trait - 1)+
+trait:(Alter_SNR * Fishing + Alter_AVP * Fishing + Alter_CV * Fishing + Alter_Median * Fishing + Alter_SNR * Dams + Alter_AVP * Dams + Alter_CV * Dams + Alter_Median * Dams)"
+
+mm.ratio.prop1 = MCMCglmm(as.formula(equa),  
                  data=DAT.prop,nitt= 350000,thin=200,burnin= 60000, 
                  rcov = ~ us(trait):units,
                  verbose=FALSE,family=c("gaussian","gaussian","gaussian"))
 
-mm.ratio.prop2 = MCMCglmm(cbind(equilibrium,opportunistic,periodic) ~ (trait - 1)+
-                 trait:(Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                 + Dens + Overlap + Fishing + Dams),  
+mm.ratio.prop2 = MCMCglmm(as.formula(equa),  
                  data=DAT.prop,nitt= 350000,thin=200,burnin= 60000, 
                  rcov = ~ us(trait):units,
                  verbose=FALSE,family=c("gaussian","gaussian","gaussian"))
 
-mm.ratio.prop3 = MCMCglmm(cbind(equilibrium,opportunistic,periodic) ~ (trait - 1)+
-                 trait:(Alter_Median + Alter_CV + Alter_AVP + Alter_SNR +
-                 + Dens + Overlap + Fishing + Dams),  
+mm.ratio.prop3 = MCMCglmm(as.formula(equa),  
                  data=DAT.prop,nitt= 350000,thin=200,burnin= 60000, 
                  rcov = ~ us(trait):units,
                  verbose=FALSE,family=c("gaussian","gaussian","gaussian"))
@@ -181,7 +171,7 @@ mm.ratio.prop3 = MCMCglmm(cbind(equilibrium,opportunistic,periodic) ~ (trait - 1
 #///////////////////////
 #Effective size
 which(c(effectiveSize(mm.ratio.prop1$VCV),effectiveSize(mm.ratio.prop1$Sol))< 1000) #ok 
-which(c(effectiveSize(mm.ratio.prop2$VCV),effectiveSize(mm.ratio.prop2$Sol))< 1000)##okok
+which(c(effectiveSize(mm.ratio.prop2$VCV),effectiveSize(mm.ratio.prop2$Sol))< 1000)##ok
 which(c(effectiveSize(mm.ratio.prop3$VCV),effectiveSize(mm.ratio.prop3$Sol))< 1000)#ok
 
 #Autocorrelation
@@ -205,5 +195,4 @@ which(c(gelman.diag(m_tot_Sol,multivariate=F)$psrf[,2],gelman.diag(m_tot_VCV,mul
 
 #Save outputs
 write.table(aa.prop,"Coefficients_proportions_MCMCglmm.txt",sep="\t")
-
 

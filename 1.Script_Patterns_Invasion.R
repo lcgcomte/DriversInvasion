@@ -95,39 +95,7 @@ lnratio_dens = log((dens_NAS+0.0001)/(dens_NA+0.0001))
 #Save files
 write.table(lnratio_prop,"LnRatio_proportion_life-history_NAS_NA.txt",sep="\t")
 write.table(lnratio_dens,"LnRatio_densities_NAS_NA.txt",sep="\t")
-write.table(dens_NA,"Densities_Natives.txt",sep="\t")
 
-#/////////////////////////////////////////////////////////////////////
-#Compute functional overlap
-#/////////////////////////////////////////////////////////////////////
-dist_NA = NULL
-for(i in 1:length(NL)){
-
-#Identify native species pool
-dat.NA = dat_fin[dat_fin$HUC8 == NL[i] & dat_fin$ORIGIN == "Native",]  
-affinities.NA = affinities_fin[rownames(affinities_fin) %in% dat.NA$Species_name,1:3]
-
-#Identify nonnative species pool
-dat.NAS = dat_fin[dat_fin$HUC8 == NL[i] & dat_fin$ORIGIN != "Native",] 
-affinities.NAS = affinities_fin[rownames(affinities_fin) %in% dat.NAS$Species_name,1:3]
-
-#Compute centroids
-NA.cent = apply(affinities.NA,2,mean,na.rm=T)
-NAS.cent = apply(affinities.NAS,2,mean,na.rm=T)
-
-#Calculate Euclidean distance
-dist_NA = rbind(dist_NA,dist(rbind(NA.cent,NAS.cent)))
-}
-rownames(dist_NA) = NL
-
-#Take inverse distance (=overlap)
-dist_NA = 1/dist_NA
-dist_NA[is.na(dist_NA)] = 0   #set overlap to zero when only one group
-
-#Save file
-write.table(dist_NA,"Overlap_NAS_NA.txt",sep="\t")
-
-rm(list=ls(all=TRUE))
 #/////////////////////////////////////////////////////////////////////
 #Assess regional trends (HUC2 hydrologic unit)
 #/////////////////////////////////////////////////////////////////////
